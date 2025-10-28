@@ -4,8 +4,8 @@ export type ViewType = 'request' | 'check' | 'inspection' | 'admin';
 export type Urgency = '긴급' | '보통' | '여유';
 export const URGENCY_OPTIONS: Urgency[] = ['긴급', '보통', '여유'];
 
-export type Status = '접수 중' | '수리 중' | '수리 완료';
-export const STATUS_OPTIONS: Status[] = ['수리 중', '수리 완료'];
+export type Status = '접수 중' | '수리 중' | '수리 완료' | '보류';
+export const STATUS_OPTIONS: Status[] = ['수리 중', '수리 완료', '보류'];
 
 
 export interface RepairRequest {

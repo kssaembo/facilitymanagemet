@@ -38,7 +38,7 @@ const RepairRequestForm: React.FC<RepairRequestFormProps> = ({ navigate }) => {
     setError('');
 
     if (!formData['층'] || !formData['교실명'] || !formData['신청자 성명'] || !formData['요청사항']) {
-      setError('필수 항목을 모두 입력해주세요. (층, 교실명, 신청자 성명, 요청사항)');
+      setError('필수 항목을 모두 입력해주세요. (위치, 교실명, 신청자 성명, 요청사항)');
       return;
     }
 
@@ -91,14 +91,17 @@ const RepairRequestForm: React.FC<RepairRequestFormProps> = ({ navigate }) => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-5 rounded-xl border border-gray-200 shadow-sm">
-            <label htmlFor="층" className="block text-lg font-bold text-gray-800 mb-1">층 <span className="text-red-500">*</span></label>
+            <label htmlFor="층" className="block text-lg font-bold text-gray-800 mb-1">위치 <span className="text-red-500">*</span></label>
             <select name="층" id="층" value={formData['층']} onChange={handleChange} className="mt-2 block w-full bg-white border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base p-3" required>
-              <option value="" disabled>-- 층을 선택하세요 --</option>
+              <option value="" disabled>-- 위치를 선택하세요 --</option>
               <option value="1층">1층</option>
               <option value="2층">2층</option>
               <option value="3층">3층</option>
               <option value="4층">4층</option>
               <option value="5층">5층</option>
+              <option value="운동장">운동장</option>
+              <option value="체육관">체육관</option>
+              <option value="기타">기타</option>
             </select>
           </div>
           <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-5 rounded-xl border border-gray-200 shadow-sm">

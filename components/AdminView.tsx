@@ -9,6 +9,21 @@ type Message = {
   text: string;
 };
 
+const getStatusColor = (status: string) => {
+    switch (status) {
+      case '접수 중':
+        return 'bg-yellow-100 text-yellow-800';
+      case '수리 중':
+        return 'bg-blue-100 text-blue-800';
+      case '수리 완료':
+        return 'bg-green-100 text-green-800';
+      case '보류':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+};
+
 const AdminView: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(sessionStorage.getItem('isAdminLoggedIn') === 'true');
   const [password, setPassword] = useState('');
@@ -18,6 +33,7 @@ const AdminView: React.FC = () => {
   const [message, setMessage] = useState<Message | null>(null);
   
   const [editingRequest, setEditingRequest] = useState<RepairRequest | null>(null);
+  const [viewingRequest, setViewingRequest] = useState<RepairRequest | null>(null);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -141,7 +157,19 @@ const AdminView: React.FC = () => {
         <h2 className="text-3xl font-bold mb-8">요청 수정 (ID: {editingRequest.ID})</h2>
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label className={labelStyle}>층</label><input name="층" value={editingRequest.층} onChange={handleEditChange} className={inputStyle}/></div>
+                <div>
+                  <label className={labelStyle}>위치</label>
+                  <select name="층" value={editingRequest.층} onChange={handleEditChange} className={inputStyle}>
+                    <option value="1층">1층</option>
+                    <option value="2층">2층</option>
+                    <option value="3층">3층</option>
+                    <option value="4층">4층</option>
+                    <option value="5층">5층</option>
+                    <option value="운동장">운동장</option>
+                    <option value="체육관">체육관</option>
+                    <option value="기타">기타</option>
+                  </select>
+                </div>
                 <div><label className={labelStyle}>교실명</label><input name="교실명" value={editingRequest.교실명} onChange={handleEditChange} className={inputStyle}/></div>
                 <div><label className={labelStyle}>신청자 성명</label><input name="신청자 성명" value={editingRequest['신청자 성명']} onChange={handleEditChange} className={inputStyle}/></div>
                 <div><label className={labelStyle}>수리 긴급 여부</label>
@@ -161,62 +189,99 @@ const AdminView: React.FC = () => {
     )
   }
 
-  const tableHeaders = ['ID', '접수일', '층', '교실명', '신청자 성명', '수리 긴급 여부', '요청사항', '비고', '수리여부', '관리'];
+  const tableHeaders = ['ID', '접수일', '위치', '교실명', '신청자 성명', '수리 긴급 여부', '요청사항', '비고', '수리여부', '관리'];
+  
+  const DetailItem = ({ label, value, isStatus = false }: { label: string; value: string | undefined; isStatus?: boolean; }) => (
+    <div className="grid grid-cols-3 gap-4 border-b border-gray-200 py-3">
+        <p className="font-semibold text-gray-600 col-span-1">{label}</p>
+        {isStatus ? (
+             <div className="col-span-2">
+                <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${getStatusColor(value || '')}`}>
+                    {value}
+                </span>
+             </div>
+        ) : (
+            <p className="text-gray-800 col-span-2 whitespace-pre-wrap">{value || '-'}</p>
+        )}
+    </div>
+  );
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-xl">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-3xl font-bold text-gray-800">관리자 패널</h2>
-        <button onClick={fetchRequests} disabled={loading} className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-2.5 rounded-lg font-semibold shadow-lg hover:scale-105 transform transition-transform duration-200 disabled:from-gray-400 disabled:to-gray-500 flex items-center">
-          <svg className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" /></svg>
-          새로고침
-        </button>
-      </div>
-
-      {message && (
-        <div className={`p-4 mb-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'}`} role="alert">
-          {message.text}
+    <>
+      {viewingRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 fade-in" onClick={() => setViewingRequest(null)}>
+            <div className="bg-white p-8 rounded-xl shadow-2xl max-w-3xl w-full m-4 relative" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setViewingRequest(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <h3 className="text-3xl font-bold mb-6 text-gray-800">보수 요청 상세 (ID: {viewingRequest.ID})</h3>
+                <div className="space-y-2 text-left text-base">
+                    <DetailItem label="접수일" value={new Date(viewingRequest.날짜).toLocaleString('ko-KR')} />
+                    <DetailItem label="위치" value={`${viewingRequest.층} - ${viewingRequest.교실명}`} />
+                    <DetailItem label="신청자 성명" value={viewingRequest['신청자 성명']} />
+                    <DetailItem label="수리 긴급 여부" value={viewingRequest['수리 긴급 여부']} />
+                    <DetailItem label="상태" value={viewingRequest.상태} isStatus={true} />
+                    <DetailItem label="요청사항" value={viewingRequest.요청사항} />
+                    <DetailItem label="비고" value={viewingRequest.비고} />
+                </div>
+            </div>
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead className="bg-gray-200">
-            <tr>
-              {tableHeaders.map(h => <th key={h} scope="col" className="px-4 py-3.5 text-left text-sm font-semibold text-gray-700">{h}</th>)}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr><td colSpan={tableHeaders.length} className="text-center py-8 text-gray-500">요청 목록을 불러오는 중...</td></tr>
-            ) : requests.map(req => (
-              <tr key={req.ID} className="hover:bg-gray-50">
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">{req.ID}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{new Date(req.날짜).toLocaleDateString()}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req.층}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req.교실명}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req['신청자 성명']}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req['수리 긴급 여부']}</td>
-                <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={req.요청사항}>{req.요청사항}</td>
-                <td className="px-4 py-3 text-sm">
-                    <input type="text" defaultValue={req.비고} onBlur={(e) => handleRemarksChange(req.ID, e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-1.5" placeholder="비고 입력..."/>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                  <select value={req.상태} onChange={(e) => handleStatusChange(req.ID, e.target.value as Status)} className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-1.5 bg-white">
-                    <option>접수 중</option>
-                    {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-3">
-                  <button onClick={() => setEditingRequest(req)} className="text-indigo-600 hover:text-indigo-900 transition-colors">수정</button>
-                  <button onClick={() => handleDelete(req.ID)} className="text-red-600 hover:text-red-900 transition-colors">삭제</button>
-                </td>
+      <div className="bg-white/80 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-xl">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <h2 className="text-3xl font-bold text-gray-800">관리자 패널</h2>
+          <button onClick={fetchRequests} disabled={loading} className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-2.5 rounded-lg font-semibold shadow-lg hover:scale-105 transform transition-transform duration-200 disabled:from-gray-400 disabled:to-gray-500 flex items-center">
+            <svg className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" /></svg>
+            새로고침
+          </button>
+        </div>
+
+        {message && (
+          <div className={`p-4 mb-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'}`} role="alert">
+            {message.text}
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-300">
+            <thead className="bg-gray-200">
+              <tr>
+                {tableHeaders.map(h => <th key={h} scope="col" className={`px-4 py-3.5 text-left text-sm font-semibold text-gray-700 ${h === '수리여부' ? 'min-w-[140px]' : ''}`}>{h}</th>)}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr><td colSpan={tableHeaders.length} className="text-center py-8 text-gray-500">요청 목록을 불러오는 중...</td></tr>
+              ) : requests.map(req => (
+                <tr key={req.ID} className="hover:bg-gray-100 cursor-pointer" onClick={() => setViewingRequest(req)}>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">{req.ID}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{new Date(req.날짜).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req.층}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req.교실명}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req['신청자 성명']}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{req['수리 긴급 여부']}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={req.요청사항}>{req.요청사항}</td>
+                  <td className="px-4 py-3 text-sm">
+                      <input type="text" defaultValue={req.비고} onClick={e => e.stopPropagation()} onBlur={(e) => handleRemarksChange(req.ID, e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-1.5" placeholder="비고 입력..."/>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm min-w-[140px]">
+                    <select value={req.상태} onClick={e => e.stopPropagation()} onChange={(e) => handleStatusChange(req.ID, e.target.value as Status)} className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-1.5 bg-white">
+                      <option>접수 중</option>
+                      {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-3">
+                    <button onClick={(e) => { e.stopPropagation(); setEditingRequest(req); }} className="text-indigo-600 hover:text-indigo-900 transition-colors">수정</button>
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(req.ID); }} className="text-red-600 hover:text-red-900 transition-colors">삭제</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
