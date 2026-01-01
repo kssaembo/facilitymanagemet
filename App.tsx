@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import Header from './components/Header';
 import RepairRequestForm from './components/RepairRequestForm';
@@ -41,7 +42,7 @@ const App: React.FC = () => {
         </div>
       </main>
       <footer className="text-center p-6 text-gray-500 text-sm">
-        © 2025 Dongan Facility Management System(ksaem). All rights reserved.
+        © 2025. Kwon's class. All rights reserved.
       </footer>
     </div>
   );
